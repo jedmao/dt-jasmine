@@ -3,7 +3,6 @@
 // Definitions by: Boris Yankov <https://github.com/borisyankov/> and Theodore Brown <https://github.com/theodorejb>
 // DefinitelyTyped: https://github.com/borisyankov/DefinitelyTyped
 
-
 declare function describe(description: string, specDefinitions: () => void): void;
 declare function xdescribe(description: string, specDefinitions: () => void): void;
 
@@ -20,7 +19,7 @@ declare function beforeEach(action: (done: () => void) => void): void;
 declare function afterEach(action: () => void): void;
 declare function afterEach(action: (done: () => void) => void): void;
 
-declare function expect(spy: Function): jasmine.Matchers;
+declare function expect(spy: jasmine.Spy): jasmine.SpyMatchers;
 declare function expect(actual: any): jasmine.Matchers;
 
 declare function spyOn(object: any, method: string): jasmine.Spy;
@@ -36,7 +35,7 @@ declare module jasmine {
     function any(aclass: any): Any;
     function objectContaining(sample: any): ObjectContaining;
     function createSpy(name: string, originalFn?: Function): Spy;
-    function createSpyObj(baseName: string, methodNames: any[]): any;
+    function createSpyObj(baseName: string, methodNames: any[]): SpyObj;
     function createSpyObj<T>(baseName: string, methodNames: any[]): T;
     function pp(value: any): string;
     function getEnv(): Env;
@@ -215,22 +214,15 @@ declare module jasmine {
         message(): any;
 
         toBe(expected: any): boolean;
-        toNotBe(expected: any): boolean;
         toEqual(expected: any): boolean;
-        toNotEqual(expected: any): boolean;
         toMatch(expected: any): boolean;
-        toNotMatch(expected: any): boolean;
         toBeDefined(): boolean;
         toBeUndefined(): boolean;
         toBeNull(): boolean;
         toBeNaN(): boolean;
         toBeTruthy(): boolean;
         toBeFalsy(): boolean;
-        toHaveBeenCalled(): boolean;
-        wasNotCalled(): boolean;
-        toHaveBeenCalledWith(...params: any[]): boolean;
         toContain(expected: any): boolean;
-        toNotContain(expected: any): boolean;
         toBeLessThan(expected: any): boolean;
         toBeGreaterThan(expected: any): boolean;
         toBeCloseTo(expected: any, precision: any): boolean;
@@ -241,6 +233,12 @@ declare module jasmine {
         not: Matchers;
 
         Any: Any;
+    }
+
+    interface SpyMatchers extends Matchers {
+        toHaveBeenCalled(): boolean;
+        toHaveBeenCalledWith(...params: any[]): boolean;
+        not: SpyMatchers;
     }
 
     interface Reporter {
@@ -349,11 +347,16 @@ declare module jasmine {
 
         identity: string;
         and: SpyAnd;
-        calls: any[];
-        mostRecentCall: { args: any[]; };
-        argsForCall: any[];
-        wasCalled: boolean;
-        callCount: number;
+        calls: {
+            any(): boolean;
+            count(): number;
+            argsFor(index: number): any[];
+            allArgs(): any[][];
+            all(): SpyCall[];
+            mostRecent(): SpyCall;
+            first(): SpyCall;
+            reset(): void;
+        };
     }
 
     interface SpyAnd {
@@ -367,6 +370,15 @@ declare module jasmine {
         throwError(msg: string): void;
         /** When a calling strategy is used for a spy, the original stubbing behavior can be returned at any time with and.stub. */
         stub(): void;
+    }
+
+    interface SpyCall {
+        object: any;
+        args: any[];
+    }
+
+    interface SpyObj {
+        [methodName: string]: Spy;
     }
 
     interface Util {
